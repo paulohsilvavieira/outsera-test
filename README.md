@@ -23,8 +23,8 @@ Instale as dependências
 ```bash
   npm install
 ```
-
-Caso queria colocar outro arquivo csv no lugar do `movielist.csv`,
+## Extras
+Caso queria colocar outro arquivo csv no lugar do `/csv/movielist.csv`,
 copie e cole e apague o antigo `movielist.csv` renomeie o novo para `movielist.csv`
 
 Inicie o servidor
@@ -32,14 +32,22 @@ Inicie o servidor
 ```bash
   npm start
 ```
+Para acessar os endpoints basta usar o caminho:
+
+```sh
+  http://localhost:3000
+```
 
 ## Rodando os testes
 
 Para rodar os testes, rode o seguinte comando
 
 ```bash
-  npm run test
+  npm test
 ```
+
+
+
 ## Documentação da API 
 
 ### Filmes - /movies

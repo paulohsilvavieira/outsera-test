@@ -8,7 +8,7 @@ import { saveStudio } from '../database/studios.repository.js'
 import { saveProducer } from '../database/producers.repository.js'
 
 export async function readCSV() {
-  const result = await csvtoJson({ delimiter: ';' }).fromFile(`${path.resolve()}/movielist.csv`)
+  const result = await csvtoJson({ delimiter: ';' }).fromFile(`${path.resolve()}/csv/movielist.csv`)
   return result.map((item) => {
 
     const regex = /\s*(?:, and |,| and )\s*/;
