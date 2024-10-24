@@ -84,8 +84,8 @@ export class ProducersController {
     try {
       const intervalAward = await getIntervalAward();
       return response.status(200).json({
-        min: [...intervalAward.slice(0, 2)],
-        max: [...intervalAward.slice(-2)]
+        min: [...intervalAward.slice(0, 1)],
+        max: [...intervalAward.slice(-1)]
 
       })
     } catch (error) {
