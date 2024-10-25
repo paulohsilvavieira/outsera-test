@@ -1,22 +1,40 @@
-import server from '../src/app';
+import { app, closeServer } from '../src/app.js';
 import request from 'supertest';
-import { createTables } from '../src/database/create-tables';
-import { saveDataFromCSV } from '../src/utils/read-csv';
-// let server;
+import { getConnection } from '../src/database/connection.js';
+import { saveDataFromCSV } from '../src/utils/save-data-csv.js';
+import { readCSV } from '../src/utils/read-csv.js';
 describe('Movies Routes', () => {
 
+
   beforeAll(async () => {
-    await createTables()
+    await getConnection()
+    await saveDataFromCSV()
   });
 
-  afterAll((done) => {
-    server.close(() => {
-      done();
-    });
-  });
+  afterAll(async () => {
+    await closeServer()
+  })
+
+  describe('CSV Files', () => {
+    test('Validate CSV values', async () => {
+      const csvData = await readCSV()
+
+      const response = await request(app).get('/movies')
+      const movies = response.body.map(movie => {
+        const { movie_id, movie_data } = movie
+        return {
+          ...movie_data
+        }
+      })
+
+      expect(csvData).toEqual(movies);
+
+    })
+  })
+
   describe('POST /movies', () => {
     test('Created - 201', async () => {
-      const response = await request(server).post('/movies').send({
+      const response = await request(app).post('/movies').send({
         title: 'any title',
         producers: 'producer1, producer2',
         year: 2025,
@@ -32,7 +50,7 @@ describe('Movies Routes', () => {
 
 
     test('Bad Request - 400', async () => {
-      const response = await request(server).post('/movies').send({
+      const response = await request(app).post('/movies').send({
         title: 'any title',
 
       });
@@ -58,10 +76,18 @@ describe('Movies Routes', () => {
         year: 2025,
         studios: 'studio1, studio2',
       }
-      const responseCreateMovie = await request(server).post('/movies').send(body);
-      const response = await request(server).get(
+
+      let id;
+      const responseCreateMovie = await request(app)
+        .post('/movies').send(body);
+
+      id = responseCreateMovie.body.location.split('/movies/')[1]
+
+      const response = await request(app).get(
         `${responseCreateMovie.body.location}`
       );
+
+
 
       expect(response.statusCode).toEqual(200);
       expect(response.body).toEqual(
@@ -76,7 +102,7 @@ describe('Movies Routes', () => {
   describe('Get All Movies', () => {
     test('Status OK - StatusCode 200', async () => {
 
-      const response = await request(server).get(`/movies`);
+      const response = await request(app).get(`/movies`);
 
       expect(response.statusCode).toEqual(200);
       expect(response.body).toEqual(
@@ -97,10 +123,10 @@ describe('Movies Routes', () => {
   describe('PUT /movies/{id}', () => {
     test('Not Content - StatusCode 204', async () => {
 
-      const responseAllMovies = await request(server).get(`/movies`);
+      const responseAllMovies = await request(app).get(`/movies`);
 
       const movie = responseAllMovies.body[0];
-      const response = await request(server)
+      const response = await request(app)
         .put(`/movies/${movie.movie_id}`)
         .send({
           title: 'New Name moive',
@@ -111,17 +137,17 @@ describe('Movies Routes', () => {
       expect(response.statusCode).toEqual(204);
       expect(response.body).toEqual({});
 
-      const responseMovieUpdated = await request(server).get(
+      const responseMovieUpdated = await request(app).get(
         `/movies/${movie.movie_id}`
       );
       expect(responseMovieUpdated.body.title).toEqual('New Name moive');
     });
     test('Bad Request - StatusCode 400', async () => {
 
-      const responseAllMovies = await request(server).get(`/movies`);
+      const responseAllMovies = await request(app).get(`/movies`);
 
       const movie = responseAllMovies.body[0];
-      const response = await request(server)
+      const response = await request(app)
         .put(`/movies/${movie.movie_id}`)
         .send({
           title: 'New Name moive',
@@ -141,21 +167,16 @@ describe('Movies Routes', () => {
   describe('DELETE /movies/{id}', () => {
     test('Status Not Content - StatusCode 204', async () => {
 
-      const responseAllMovies = await request(server).get(`/movies`);
+      const responseAllMovies = await request(app).get(`/movies`);
       const movie = responseAllMovies.body[0];
 
 
-      const response = await request(server)
+      const response = await request(app)
         .delete(`/movies/${movie.movie_id}`)
-        .send({
-          title: 'New Name moive',
-          winner: true,
-          year: 2099,
-        });
 
       expect(response.statusCode).toEqual(204);
 
-      const movieDeletedResponse = await request(server)
+      const movieDeletedResponse = await request(app)
         .get(
           `/movies/${movie.movie_id}`
         );

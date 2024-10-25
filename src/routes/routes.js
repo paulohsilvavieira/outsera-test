@@ -5,6 +5,7 @@ import { StudiosController } from '../controllers/studios.controller.js'
 import { ProducersController } from '../controllers/producers.controller.js'
 
 const router = Router()
+
 const movieController = new MoviesController()
 const studioController = new StudiosController()
 const producerController = new ProducersController()
@@ -15,10 +16,6 @@ router.post('/movies', movieController.create)
 router.put('/movies/:id', movieController.update)
 router.delete('/movies/:id', movieController.delete)
 
-// router.put('/movies/producers/:id', movieController.update)
-// router.put('/movies/studios/:id', movieController.update)
-// router.delete('/movies/producers/:id', movieController.update)
-// router.delete('/movies/studios/:id', movieController.update)
 
 router.get('/studios/:id', studioController.get)
 router.get('/studios', studioController.getAll)

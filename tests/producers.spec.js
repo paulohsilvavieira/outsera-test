@@ -1,23 +1,24 @@
-import server from '../src/app.js';
+import { app, closeServer } from '../src/app.js';
 import request from 'supertest';
-import { createTables } from '../src/database/create-tables.js';
-import { saveDataFromCSV } from '../src/utils/read-csv.js';
+import { getConnection } from '../src/database/connection.js';
+import { saveDataFromCSV } from '../src/utils/save-data-csv.js';
 
 describe('Producers Routes', () => {
 
   beforeAll(async () => {
-    await createTables()
+    await getConnection()
+    await saveDataFromCSV()
+  });
+  afterEach(async () => {
+    await closeServer()
   });
 
-  afterAll((done) => {
-    server.close();
-    done();
 
-  });
+
 
   describe('POST /producers', () => {
     test('Created - 201', async () => {
-      const response = await request(server).post('/producers').send({
+      const response = await request(app).post('/producers').send({
         name: "test producer"
       });
       expect(response.statusCode).toEqual(201);
@@ -29,7 +30,7 @@ describe('Producers Routes', () => {
 
 
     test('Bad Request - 400', async () => {
-      const response = await request(server).post('/producers').send();
+      const response = await request(app).post('/producers').send();
       expect(response.statusCode).toEqual(400);
       expect(response.body).toEqual({
         errors: [
@@ -46,9 +47,9 @@ describe('Producers Routes', () => {
         name: 'Bruce Wayne',
 
       }
-      const responseCreateProducers = await request(server).post('/Producers').send(body);
+      const responseCreateProducers = await request(app).post('/Producers').send(body);
 
-      const response = await request(server).get(
+      const response = await request(app).get(
         `${responseCreateProducers.body.location}`
       );
 
@@ -63,7 +64,7 @@ describe('Producers Routes', () => {
   describe('Get All Producers', () => {
     test('Status OK - StatusCode 200', async () => {
 
-      const response = await request(server).get(`/producers`);
+      const response = await request(app).get(`/producers`);
 
       expect(response.statusCode).toEqual(200);
       expect(response.body).toEqual(
@@ -81,10 +82,10 @@ describe('Producers Routes', () => {
   describe('PUT /producers/{id}', () => {
     test('Not Content - StatusCode 204', async () => {
 
-      const responseAllProducers = await request(server).get(`/producers`);
+      const responseAllProducers = await request(app).get(`/producers`);
 
       const producer = responseAllProducers.body[0];
-      const response = await request(server)
+      const response = await request(app)
         .put(`/producers/${producer.id}`)
         .send({
           name: 'Bruce Wayne 2',
@@ -93,17 +94,17 @@ describe('Producers Routes', () => {
       expect(response.statusCode).toEqual(204);
       expect(response.body).toEqual({});
 
-      const resonseProducerUpdated = await request(server).get(
+      const resonseProducerUpdated = await request(app).get(
         `/producers/${producer.id}`
       );
       expect(resonseProducerUpdated.body.name).toEqual('Bruce Wayne 2');
     });
     test('Bad Request - StatusCode 400', async () => {
 
-      const responseAllProducers = await request(server).get(`/producers`);
+      const responseAllProducers = await request(app).get(`/producers`);
 
       const producer = responseAllProducers.body[0];
-      const response = await request(server)
+      const response = await request(app)
         .put(`/producers/${producer.id}`)
         .send({
 
@@ -122,17 +123,17 @@ describe('Producers Routes', () => {
   describe('DELETE /producers/{id}', () => {
     test('Status Not Content - StatusCode 204', async () => {
 
-      const responseAllProducers = await request(server).get(`/producers`);
+      const responseAllProducers = await request(app).get(`/producers`);
       const producer = responseAllProducers.body[0];
 
 
-      const response = await request(server)
+      const response = await request(app)
         .delete(`/producers/${producer.id}`)
 
 
       expect(response.statusCode).toEqual(204);
 
-      const producerDeletedResponse = await request(server)
+      const producerDeletedResponse = await request(app)
         .get(
           `/producers/${producer.id}`
         );
@@ -143,7 +144,7 @@ describe('Producers Routes', () => {
   describe('Get Interval Awards', () => {
     test('Status OK - StatusCode 200', async () => {
 
-      const response = await request(server).get(`/producers/award/interval`);
+      const response = await request(app).get(`/producers/award/interval`);
 
       expect(response.statusCode).toEqual(200);
       expect(response.body).toEqual({

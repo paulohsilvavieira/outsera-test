@@ -1,21 +1,20 @@
-import server from '../src/app.js';
+import { app, closeServer, server } from '../src/app.js';
 import request from 'supertest';
-import { createTables } from '../src/database/create-tables.js';
+import { getConnection } from '../src/database/connection.js';
+import { saveDataFromCSV } from '../src/utils/save-data-csv.js';
 describe('Studios Routes', () => {
-
   beforeAll(async () => {
-    await createTables()
+    await getConnection()
+    await saveDataFromCSV()
   });
 
-  afterAll((done) => {
-    server.close(() => {
-      done();
-    });
+  afterEach(async () => {
+    await closeServer()
   });
 
   describe('POST /studios', () => {
     test('Created - 201', async () => {
-      const response = await request(server)
+      const response = await request(app)
         .post('/studios')
         .send({
           name: `studio ${Date.now()}`
@@ -29,7 +28,7 @@ describe('Studios Routes', () => {
 
 
     test('Bad Request - 400', async () => {
-      const response = await request(server).post('/studios').send();
+      const response = await request(app).post('/studios').send();
       expect(response.statusCode).toEqual(400);
       expect(response.body).toEqual({
         errors: [
@@ -45,9 +44,9 @@ describe('Studios Routes', () => {
       const body = {
         name: 'Wayne Studios',
       }
-      const responseCreateStudios = await request(server).post('/studios').send(body);
+      const responseCreateStudios = await request(app).post('/studios').send(body);
 
-      const response = await request(server).get(
+      const response = await request(app).get(
         `${responseCreateStudios.body.location}`
       );
 
@@ -61,11 +60,11 @@ describe('Studios Routes', () => {
   });
   describe('Get All Studios', () => {
     test('Status OK - StatusCode 200', async () => {
-      await request(server).post('/studios').send({
+      await request(app).post('/studios').send({
         name: `studio ${Date.now()}`
       });
 
-      const response = await request(server).get(`/studios`);
+      const response = await request(app).get(`/studios`);
 
       expect(response.statusCode).toEqual(200);
       expect(response.body).toEqual(
@@ -83,10 +82,10 @@ describe('Studios Routes', () => {
   describe('PUT /studios/{id}', () => {
     test('Not Content - StatusCode 204', async () => {
 
-      const responseAllStudios = await request(server).get(`/studios`);
+      const responseAllStudios = await request(app).get(`/studios`);
 
       const studio = responseAllStudios.body[0];
-      const response = await request(server)
+      const response = await request(app)
         .put(`/studios/${studio.id}`)
         .send({
           name: 'Wayne Studios 2',
@@ -95,17 +94,17 @@ describe('Studios Routes', () => {
       expect(response.statusCode).toEqual(204);
       expect(response.body).toEqual({});
 
-      const resonseStudioUpdated = await request(server).get(
+      const resonseStudioUpdated = await request(app).get(
         `/studios/${studio.id}`
       );
       expect(resonseStudioUpdated.body.name).toEqual('Wayne Studios 2');
     });
     test('Bad Request - StatusCode 400', async () => {
 
-      const responseAllStudios = await request(server).get(`/studios`);
+      const responseAllStudios = await request(app).get(`/studios`);
 
       const studio = responseAllStudios.body[0];
-      const response = await request(server)
+      const response = await request(app)
         .put(`/studios/${studio.id}`)
         .send({});
 
@@ -121,17 +120,17 @@ describe('Studios Routes', () => {
   describe('DELETE /studios/{id}', () => {
     test('Status Not Content - StatusCode 204', async () => {
 
-      const responseAllStudios = await request(server).get(`/studios`);
+      const responseAllStudios = await request(app).get(`/studios`);
       const studio = responseAllStudios.body[0];
 
 
-      const response = await request(server)
+      const response = await request(app)
         .delete(`/studios/${studio.id}`)
 
 
       expect(response.statusCode).toEqual(204);
 
-      const studioDeletedResponse = await request(server)
+      const studioDeletedResponse = await request(app)
         .get(
           `/studios/${studio.id}`
         );

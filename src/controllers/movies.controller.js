@@ -59,6 +59,7 @@ export class MoviesController {
 
       return response.status(204).json({})
     } catch (error) {
+      console.log(error)
       return response.status(500).json({
         msg: 'Internal Server Error'
       })
@@ -71,6 +72,7 @@ export class MoviesController {
       await deleteMovie(id);
       return response.status(204).json({})
     } catch (error) {
+      console.log(error)
       return response.status(500).json({
         msg: 'Internal Server Error'
       })
@@ -79,11 +81,11 @@ export class MoviesController {
 
   get = async (request, response) => {
     try {
-
       const movieId = request.params.id
       const movie = await getMovieById(movieId);
       return response.status(200).json(movie ?? {})
     } catch (error) {
+      console.log(error);
       return response.status(500).json({
         msg: 'Internal Server Error'
       })
@@ -92,7 +94,18 @@ export class MoviesController {
 
   getAllMovies = async (request, response) => {
     try {
-      const movies = await getMovies();
+      const moviesRaw = await getMovies()]
+
+      const movies = moviesRaw.map((movie) => {
+        return {
+          ...movie,
+          winner: movie.winner,
+          producers: movie.producers.split(',').sort().join(','),
+          studios: movie.studios.split(',').sort().join(',')
+        }
+      })
+      console.log(movies)
+
       return response.status(200).json(movies)
     } catch (error) {
       return response.status(500).json({

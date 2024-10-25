@@ -1,4 +1,7 @@
-import { saveProducer, updateProducer, getProducerById, getproducers, deleteProducer, getIntervalAward } from '../database/producers.repository.js'
+import {
+  saveProducer, updateProducer, getProducerById,
+  getProducers, deleteProducer, getIntervalAward
+} from '../database/producers.repository.js'
 
 export class ProducersController {
   create = async (request, response) => {
@@ -72,7 +75,7 @@ export class ProducersController {
 
   getAll = async (request, response) => {
     try {
-      const producers = await getproducers();
+      const producers = await getProducers();
       return response.status(200).json(producers)
     } catch (error) {
       return response.status(500).json({

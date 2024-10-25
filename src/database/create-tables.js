@@ -1,8 +1,7 @@
 
-import connection from "./connection.js"
+import { getConnection } from "./connection.js"
 export async function createTables() {
-  const db = await connection.connection()
-
+  const db = await getConnection()
   await db.exec(`
     CREATE TABLE IF NOT EXISTS movies (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
